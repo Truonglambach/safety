@@ -24,23 +24,31 @@ Details zu den Regeln: siehe [`Konzept.md`, Abschnitt "Spielregeln"](Konzept.md#
 
 ## Debug-Logging (Issue #7)
 
-`src/debug/logger.mjs` enthält einen browserseitigen Logger ohne zusätzliche Abhängigkeiten. Der Debug-Modus erfasst fachliche Aktionen; Fehler werden immer erfasst. Der Puffer hält höchstens 5 MiB JSON-Einträge und verwirft bei Bedarf die ältesten. `src/debug/browser.mjs` ergänzt einen Schalter und einen JSON-Export für eine bestehende Toolbar.
+Die Anwendung verwendet React, TypeScript und Vite. Zum Starten werden Node.js ab 22.12 und pnpm benötigt:
 
-```js
-import { createDebugLogger, installGlobalErrorHandlers } from './src/debug/logger.mjs';
-import { mountDebugControls } from './src/debug/browser.mjs';
-
-const logger = createDebugLogger({ appVersion: '0.1.0', commitId: 'BUILD_COMMIT_ID' });
-installGlobalErrorHandlers(logger);
-mountDebugControls(document.querySelector('#toolbar'), logger, {
-  getProjectState: () => currentProject,
-});
-
-logger.logAction('gate-connected', { componentIds: ['gate-1', 'input-2'] });
-const result = logger.runAction('reliability-calculation', () => calculateReliability(), {
-  componentIds: ['gate-1'],
-});
-logger.logAction('tab-converted', { componentIds: ['gate-1'] });
+```sh
+pnpm install
+pnpm dev
 ```
 
-`runAction` zeichnet fehlgeschlagene synchrone und asynchrone Berechnungen auch bei ausgeschaltetem Debug-Modus auf und gibt Fehler unverändert weiter. Der Export enthält Zeitstempel, Aktion, Komponenten-IDs, Fehlermeldung und Stacktrace sowie App-Version, Commit-ID und Browser-Version. Ein Projektstand wird nur mit `getProjectState` ergänzt. Die App muss `appVersion`, `commitId` und ihre fachlichen Aktionen beim Einbinden übergeben; der Repository-Stand enthält noch keine App-Oberfläche.
+`pnpm build` prüft TypeScript und erzeugt den Produktionsbuild in `dist/`. `pnpm preview` zeigt diesen Build lokal an.
+
+`src/debug/logger.ts` enthält den typisierten Logger. Der Debug-Modus erfasst fachliche Aktionen; Fehler werden immer erfasst. Der Puffer hält höchstens 5 MiB JSON-Einträge und verwirft bei Bedarf die ältesten. Überlange Einträge werden gekürzt und markiert. Die Grenze betrifft die UTF-8-Daten der Einträge, nicht den gesamten JavaScript-Heap oder den Export mit optionalem Projektstand. Logs bleiben im Arbeitsspeicher und gehen beim Neuladen verloren.
+
+Die React-Komponente `DebugControls` bietet einen Schalter und JSON-Download. Wird `getProjectState` übergeben, kann der Benutzer den Projektstand ausdrücklich zum Export hinzufügen. Alle zukünftigen Reiter nutzen dieselbe Instanz aus `src/debug/appLogger.ts`:
+
+```tsx
+import { appLogger } from './debug/appLogger';
+import { DebugControls } from './debug/DebugControls';
+
+appLogger.logAction('gate-connected', { componentIds: ['gate-1', 'input-2'] });
+const result = appLogger.runAction('reliability-calculation', () => calculateReliability(), {
+  componentIds: ['gate-1'],
+});
+appLogger.logAction('tab-converted', { componentIds: ['gate-1'] });
+
+// In der App-Toolbar; currentProject muss JSON-serialisierbar sein:
+<DebugControls logger={appLogger} getProjectState={() => currentProject} />
+```
+
+`runAction` zeichnet fehlgeschlagene synchrone und asynchrone Berechnungen auch bei ausgeschaltetem Debug-Modus auf und gibt Fehler weiter. Unbehandelte Browser-Fehler, Promise-Ablehnungen und React-Renderfehler werden ebenfalls erfasst. Der Export enthält Zeitstempel, Aktion, Komponenten-IDs, Fehlermeldung und Stacktrace, sofern verfügbar, sowie App-Version, Commit-ID und Browser-Version. Vite liest die Version aus `package.json` und die Commit-ID beim Start beziehungsweise Build aus Git; ohne Git-Metadaten lautet die ID `unknown`. Die Startseite stellt die Logging-Bedienelemente bereit. Die Diagramm-Editoren entstehen in eigenen Issues.
