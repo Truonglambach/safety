@@ -41,7 +41,9 @@ npm install
 npm run dev
 ```
 
-`npm run build` prüft TypeScript und erzeugt den Produktionsbuild in `dist/`. `npm run lint` führt die Codeprüfung aus. `npm run preview` zeigt den Build lokal an.
+`npm run build` prüft TypeScript und erzeugt den Produktionsbuild in `dist/`. `npm run lint` führt die Codeprüfung aus. `npm test` führt die Testsuite mit Vitest und React Testing Library aus. `npm run preview` zeigt den Build lokal an.
+
+Die Tests für Issue #7 liegen in `src/debug/logger.test.ts` und `src/debug/DebugControls.test.tsx`. Sie prüfen Debug-Umschaltung, synchrone und asynchrone Fehler, globale Fehlerbehandlung, Puffergrenze und Verdrängung alter Einträge, gekürzte übergroße Fehler sowie Export-Metadaten. Die React-Tests prüfen die Bedienelemente, die ausdrückliche Auswahl eines Projektstands, den Download-Aufruf und die Rückmeldung bei Exportfehlern. Browser-Downloads werden in der Testumgebung simuliert.
 
 `src/debug/logger.ts` enthält den typisierten Logger. Der Debug-Modus erfasst fachliche Aktionen; Fehler werden immer erfasst. Der Puffer hält höchstens 5 MiB JSON-Einträge und verwirft bei Bedarf die ältesten. Überlange Einträge werden gekürzt und markiert. Die Grenze betrifft die UTF-8-Daten der Einträge, nicht den gesamten JavaScript-Heap oder den Export mit optionalem Projektstand. Logs bleiben im Arbeitsspeicher und gehen beim Neuladen verloren.
 
