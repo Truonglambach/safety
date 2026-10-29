@@ -1,9 +1,0 @@
-:root { font-family: system-ui, sans-serif; color: #e5edf7; background: #131b29; color-scheme: dark; }
-body { margin: 0; }
-main { max-width: 740px; margin: 12vh auto; padding: 24px; }
-h1 { font-size: clamp(2rem, 5vw, 3rem); }
-p { line-height: 1.6; color: #b8c7da; }
-section { display: grid; gap: 20px; padding: 24px; border: 1px solid #40516c; border-radius: 12px; }
-label, button { font: inherit; }
-button { padding: 12px 20px; border: 0; border-radius: 6px; background: #91c9ff; color: #132033; cursor: pointer; }
-button:focus-visible, input:focus-visible { outline: 3px solid #f6c56f; outline-offset: 4px; }

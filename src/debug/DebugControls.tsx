@@ -32,7 +32,7 @@ export function DebugControls({ logger, getProjectState }: Props) {
     }
   }
 
-  return <section aria-label="Debugging">
+  return <section className="debug-controls" aria-label="Debugging">
     <label><input type="checkbox" checked={enabled}
       onChange={(event) => logger.setDebugEnabled(event.target.checked)} /> Debug-Modus</label>
     {getProjectState && <label><input type="checkbox" checked={includeProject}
